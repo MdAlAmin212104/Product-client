@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "./useAxios";
 
-const useProduct = (currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange) => {
+const useProduct = (currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange, sortBy ) => {
   const axiosCommon = useAxios();
   const { data: products = [], error, isLoading } = useQuery({
-    queryKey: ['product', currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange],
+    queryKey: ['product', currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange, sortBy],
     queryFn: async () => {
       const res = await axiosCommon.get(`/products`, {
         params: {
@@ -14,7 +14,8 @@ const useProduct = (currentPage, itemPerPage, search, selectedBrands, selectedCa
           brands: selectedBrands.join(','),
           categories: selectedCategories.join(','),
           minPrice: priceRange.minPrice,
-          maxPrice: priceRange.maxPrice
+          maxPrice: priceRange.maxPrice,
+          sortBy,
         }
       });
       return res.data;

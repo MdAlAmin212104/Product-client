@@ -6,11 +6,15 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemPerPage, setItemPerPage] = useState(10);
   const [search, setSearch] = useState("");
-  
+  const [sortBy, setSortBy] = useState(""); // New state for sorting
+
   // State for filters
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: Infinity });
+  const [priceRange, setPriceRange] = useState({
+    minPrice: 0,
+    maxPrice: Infinity,
+  });
 
   const { products, isLoading, error } = useProduct(
     currentPage,
@@ -18,15 +22,21 @@ const Home = () => {
     search,
     selectedBrands,
     selectedCategories,
-    priceRange
+    priceRange,
+    sortBy
   );
 
   const { count } = useCount(
     search,
     selectedBrands,
     selectedCategories,
-    priceRange
+    priceRange,
+    sortBy
   );
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value); // Update sortBy state when user selects a sorting option
+  };
 
   const handleItemPerPage = (e) => {
     setItemPerPage(parseInt(e.target.value));
@@ -50,17 +60,15 @@ const Home = () => {
   };
 
   const handleBrandChange = (brand) => {
-    setSelectedBrands(prev =>
-      prev.includes(brand)
-        ? prev.filter(b => b !== brand)
-        : [...prev, brand]
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
     );
   };
 
   const handleCategoryChange = (category) => {
-    setSelectedCategories(prev =>
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
   };
@@ -88,8 +96,17 @@ const Home = () => {
             onChange={handleSearchChange}
             placeholder="Search products..."
           />
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4 opacity-70">
-            <path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className="h-4 w-4 opacity-70"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+              clipRule="evenodd"
+            />
           </svg>
         </label>
       </div>
@@ -102,7 +119,13 @@ const Home = () => {
         <div className="md:w-[400px]">
           <h1 className="text-3xl font-bold my-4">Brand</h1>
           <div className="space-y-4">
-            {["XYZ Electronics", "ProTech", "SeriesWear", "SoundMaster", "TechWave"].map((brand) => (
+            {[
+              "XYZ Electronics",
+              "ProTech",
+              "SeriesWear",
+              "SoundMaster",
+              "TechWave",
+            ].map((brand) => (
               <div key={brand} className="form-control">
                 <label className="flex cursor-pointer">
                   <input
@@ -119,7 +142,13 @@ const Home = () => {
 
           <h1 className="text-3xl font-bold my-4">Category</h1>
           <div className="space-y-4">
-            {["Electronics", "Computers", "Wearables", "Home Entertainment", "Accessories"].map((category) => (
+            {[
+              "Electronics",
+              "Computers",
+              "Wearables",
+              "Home Entertainment",
+              "Accessories",
+            ].map((category) => (
               <div key={category} className="form-control">
                 <label className="flex cursor-pointer">
                   <input
@@ -153,43 +182,57 @@ const Home = () => {
             />
             <br />
             <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Filters
-          </button>
+              type="submit"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Filters
+            </button>
           </form>
 
-          
+          <div className="sorting-options mt-6">
+            <label>Sort by: </label>
+            <br />
+            <select
+              value={sortBy} onChange={handleSortChange}
+              className="select select-bordered w-full mt-2"
+            >
+              <option value="">Default</option>
+              <option value="priceLowToHigh">Price: Low to High</option>
+              <option value="priceHighToLow">Price: High to Low</option>
+              <option value="dateNewestFirst">Date Added: Newest First</option>
+            </select>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          {isLoading ? <p>Loading...</p> : error ? <p>Error loading products</p> : (
-            products.length > 0 ? (
-              products.map((product) => (
-                <div key={product._id} className="card bg-base-100 shadow-xl">
-                  <figure className="h-[200px]">
-                    <img src={product.productImage} alt={product.productName} />
-                  </figure>
-                  <div className="flex justify-between mt-4">
-                    <h1 className="ml-2">Price {product.price}</h1>
-                    <h4 className="mr-2">{product.category}</h4>
-                  </div>
-                  <div className="card-body">
-                    <div className="flex justify-between ">
-                      <h2 className="card-title">{product.productName}</h2>
-                      <h1>Rating: {product.ratings}</h1>
-                    </div>
-                    <p>{product.description}</p>
-                    <h5 className="text-[12px]">
-                      Product Add Date: {product.productCreationDate}
-                    </h5>
-                  </div>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p>Error loading products</p>
+          ) : products.length > 0 ? (
+            products.map((product) => (
+              <div key={product._id} className="card bg-base-100 shadow-xl">
+                <figure className="h-[200px]">
+                  <img src={product.productImage} alt={product.productName} />
+                </figure>
+                <div className="flex justify-between mt-4">
+                  <h1 className="ml-2">Price {product.price}</h1>
+                  <h4 className="mr-2">{product.category}</h4>
                 </div>
-              ))
-            ) : (
-              <p>No products found.</p>
-            )
+                <div className="card-body">
+                  <div className="flex justify-between ">
+                    <h2 className="card-title">{product.productName}</h2>
+                    <h1>Rating: {product.ratings}</h1>
+                  </div>
+                  <p>{product.description}</p>
+                  <h5 className="text-[12px]">
+                    Product Add Date: {product.productCreationDate}
+                  </h5>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No products found.</p>
           )}
         </div>
       </div>
