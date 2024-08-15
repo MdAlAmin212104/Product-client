@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useProduct from "../../hook/useProduct";
+import useCount from "../../hook/useCount";
 
 const Home = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -11,7 +12,7 @@ const Home = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 1000]);
 
-  const [count, setCount] = useState(0);
+  //const [count, setCount] = useState(0);
   const { products, isLoading, error } = useProduct(
     currentPage,
     itemPerPage,
@@ -21,11 +22,13 @@ const Home = () => {
     priceRange
   );
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_URL}/productsCount`)
-      .then((res) => res.json())
-      .then((data) => setCount(data.count));
-  }, [selectedBrands, selectedCategories, priceRange]);
+  const {count} = useCount(
+    search,
+    selectedBrands,
+    selectedCategories,
+    priceRange
+  )
+
 
   const handleItemPerPage = (e) => {
     setItemPerPage(parseInt(e.target.value));
