@@ -17,7 +17,6 @@ const Navbar = () => {
     setModalType('');
     document.getElementById("my_modal").close();
   };
-  console.log(user);
 
   return (
     <div className="navbar bg-base-100">

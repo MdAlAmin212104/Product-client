@@ -111,12 +111,8 @@ const Home = () => {
         </label>
       </div>
 
-      <h1 className="text-center dark:text-white my-4 font-bold text-4xl">
-        Product List {products.length}
-      </h1>
-
-      <div className="flex gap-4">
-        <div className="md:w-[400px]">
+      <div className="md:flex gap-4">
+        <div className="md:w-[400px] ml-4 mt-8">
           <h1 className="text-3xl font-bold my-4">Brand</h1>
           <div className="space-y-4">
             {[
@@ -134,7 +130,7 @@ const Home = () => {
                     checked={selectedBrands.includes(brand)}
                     onChange={() => handleBrandChange(brand)}
                   />
-                  <span className="label-text ml-4 text-white">{brand}</span>
+                  <span className="label-text ml-4 dark:text-white">{brand}</span>
                 </label>
               </div>
             ))}
@@ -157,7 +153,7 @@ const Home = () => {
                     checked={selectedCategories.includes(category)}
                     onChange={() => handleCategoryChange(category)}
                   />
-                  <span className="label-text ml-4 text-white">{category}</span>
+                  <span className="label-text ml-4 dark:text-white">{category}</span>
                 </label>
               </div>
             ))}
@@ -194,7 +190,7 @@ const Home = () => {
             <br />
             <select
               value={sortBy} onChange={handleSortChange}
-              className="select select-bordered w-full mt-2"
+              className="select select-bordered mt-2"
             >
               <option value="">Default</option>
               <option value="priceLowToHigh">Price: Low to High</option>
@@ -204,7 +200,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mt-8">
           {isLoading ? (
             <p>Loading...</p>
           ) : error ? (
