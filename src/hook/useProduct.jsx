@@ -1,13 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "./useAxios";
 
-const useProduct = (currentPage, itemPerPage, search) => {
+const useProduct = (currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange) => {
   const axiosCommon = useAxios();
   
   const { data: products = [], error, isLoading } = useQuery({
-    queryKey: ['product', currentPage, itemPerPage, search],
+    queryKey: ['product', currentPage, itemPerPage, search, selectedBrands, selectedCategories, priceRange],
     queryFn: async () => {
-      const res = await axiosCommon.get(`/products?page=${currentPage}&size=${itemPerPage}&search=${search || ''}`);
+      const res = await axiosCommon.get(`/products`, {
+        params: {
+          page: currentPage,
+          size: itemPerPage,
+          search,
+          brands: selectedBrands.join(','),
+          categories: selectedCategories.join(','),
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1]
+        }
+      });
       return res.data;
     },
   });
@@ -16,4 +26,3 @@ const useProduct = (currentPage, itemPerPage, search) => {
 };
 
 export default useProduct;
-

@@ -6,21 +6,26 @@ const Home = () => {
   const [itemPerPage, setItemPerPage] = useState(10);
   const [search, setSearch] = useState("");
   
+  // State for filters
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
 
   const [count, setCount] = useState(0);
-  const { products, error, } = useProduct(
+  const { products, isLoading, error } = useProduct(
     currentPage,
     itemPerPage,
     search,
+    selectedBrands,
+    selectedCategories,
+    priceRange
   );
-
-
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_URL}/productsCount`)
       .then((res) => res.json())
       .then((data) => setCount(data.count));
-  }, []);
+  }, [selectedBrands, selectedCategories, priceRange]);
 
   const handleItemPerPage = (e) => {
     setItemPerPage(parseInt(e.target.value));
@@ -43,7 +48,31 @@ const Home = () => {
     setSearch(e.target.value);
   };
 
-  if (error) return <div>Error loading products</div>;
+  const handleBrandChange = (brand) => {
+    setSelectedBrands(prev =>
+      prev.includes(brand)
+        ? prev.filter(b => b !== brand)
+        : [...prev, brand]
+    );
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const handlePriceRangeChange = (e) => {
+    const { name, value } = e.target;
+    setPriceRange(prev => ({
+      ...prev,
+      [name]: parseInt(value)
+    }));
+  };
+
+  console.log(priceRange);
 
   return (
     <div>
@@ -56,17 +85,8 @@ const Home = () => {
             onChange={handleSearchChange}
             placeholder="Search products..."
           />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="h-4 w-4 opacity-70"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-              clipRule="evenodd"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4 opacity-70">
+            <path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" />
           </svg>
         </label>
       </div>
@@ -76,7 +96,6 @@ const Home = () => {
       </h1>
 
       <div className="flex gap-4">
-        {/* Brand Filter */}
         <div className="md:w-[400px]">
           <h1 className="text-3xl font-bold my-4">Brand</h1>
           <div className="space-y-4">
@@ -86,6 +105,8 @@ const Home = () => {
                   <input
                     type="checkbox"
                     className="checkbox"
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => handleBrandChange(brand)}
                   />
                   <span className="label-text ml-4 text-white">{brand}</span>
                 </label>
@@ -93,7 +114,6 @@ const Home = () => {
             ))}
           </div>
 
-          {/* Category Filter */}
           <h1 className="text-3xl font-bold my-4">Category</h1>
           <div className="space-y-4">
             {["Electronics", "Computers", "Wearables", "Home Entertainment", "Accessories"].map((category) => (
@@ -102,6 +122,8 @@ const Home = () => {
                   <input
                     type="checkbox"
                     className="checkbox"
+                    checked={selectedCategories.includes(category)}
+                    onChange={() => handleCategoryChange(category)}
                   />
                   <span className="label-text ml-4 text-white">{category}</span>
                 </label>
@@ -109,55 +131,58 @@ const Home = () => {
             ))}
           </div>
 
-          {/* Price Range Filter */}
           <h1 className="text-3xl font-bold my-4">Price</h1>
           <div className="flex justify-between">
             <input
               type="number"
               name="minPrice"
+              value={priceRange[0]}
+              onChange={handlePriceRangeChange}
               className="input input-bordered"
               placeholder="Min"
             />
             <input
               type="number"
               name="maxPrice"
+              value={priceRange[1]}
+              onChange={handlePriceRangeChange}
               className="input input-bordered"
               placeholder="Max"
             />
           </div>
         </div>
 
-        {/* Products Display */}
         <div className="grid grid-cols-2 gap-4">
-          {products.length > 0 ? (
-            products.map((product) => (
-              <div key={product._id} className="card bg-base-100 shadow-xl">
-                <figure className="h-[200px]">
-                  <img src={product.productImage} alt={product.productName} />
-                </figure>
-                <div className="flex justify-between mt-4">
-                  <h1 className="ml-2">Price {product.price}</h1>
-                  <h4 className="mr-2">{product.category}</h4>
-                </div>
-                <div className="card-body">
-                  <div className="flex justify-between ">
-                    <h2 className="card-title">{product.productName}</h2>
-                    <h1>Rating: {product.ratings}</h1>
+          {isLoading ? <p>Loading...</p> : error ? <p>Error loading products</p> : (
+            products.length > 0 ? (
+              products.map((product) => (
+                <div key={product._id} className="card bg-base-100 shadow-xl">
+                  <figure className="h-[200px]">
+                    <img src={product.productImage} alt={product.productName} />
+                  </figure>
+                  <div className="flex justify-between mt-4">
+                    <h1 className="ml-2">Price {product.price}</h1>
+                    <h4 className="mr-2">{product.category}</h4>
                   </div>
-                  <p>{product.description}</p>
-                  <h5 className="text-[12px]">
-                    Product Add Date: {product.productCreationDate}
-                  </h5>
+                  <div className="card-body">
+                    <div className="flex justify-between ">
+                      <h2 className="card-title">{product.productName}</h2>
+                      <h1>Rating: {product.ratings}</h1>
+                    </div>
+                    <p>{product.description}</p>
+                    <h5 className="text-[12px]">
+                      Product Add Date: {product.productCreationDate}
+                    </h5>
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p>No products found.</p>
+              ))
+            ) : (
+              <p>No products found.</p>
+            )
           )}
         </div>
       </div>
 
-      {/* Pagination */}
       <div className="pagination text-center mb-10 dark:text-black">
         <p className="my-4 dark:text-white">Current page {currentPage}</p>
         <button
