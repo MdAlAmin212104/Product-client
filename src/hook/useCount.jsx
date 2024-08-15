@@ -13,8 +13,8 @@ const useCount = (search, selectedBrands, selectedCategories, priceRange) => {
             search,
             brands: selectedBrands.join(','),
             categories: selectedCategories.join(','),
-            minPrice: priceRange[0],
-            maxPrice: priceRange[1]
+            minPrice: priceRange.minPrice,
+            maxPrice: priceRange.maxPrice
           }
         });
         return res.data.count;

@@ -10,9 +10,8 @@ const Home = () => {
   // State for filters
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: Infinity });
 
-  //const [count, setCount] = useState(0);
   const { products, isLoading, error } = useProduct(
     currentPage,
     itemPerPage,
@@ -22,13 +21,12 @@ const Home = () => {
     priceRange
   );
 
-  const {count} = useCount(
+  const { count } = useCount(
     search,
     selectedBrands,
     selectedCategories,
     priceRange
-  )
-
+  );
 
   const handleItemPerPage = (e) => {
     setItemPerPage(parseInt(e.target.value));
@@ -67,15 +65,17 @@ const Home = () => {
     );
   };
 
-  const handlePriceRangeChange = (e) => {
-    const { name, value } = e.target;
-    setPriceRange(prev => ({
-      ...prev,
-      [name]: parseInt(value)
-    }));
+  const handleFilter = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const minPrice = form.minPrice.value;
+    const maxPrice = form.maxPrice.value;
+    setPriceRange({
+      minPrice: parseInt(minPrice) || 0,
+      maxPrice: parseInt(maxPrice) || Infinity,
+    });
+    form.reset();
   };
-
-  console.log(priceRange);
 
   return (
     <div>
@@ -135,24 +135,32 @@ const Home = () => {
           </div>
 
           <h1 className="text-3xl font-bold my-4">Price</h1>
-          <div className="flex justify-between">
+          <form onSubmit={handleFilter} className="space-y-6">
+            <label htmlFor="Min">Min : </label>
             <input
               type="number"
               name="minPrice"
-              value={priceRange[0]}
-              onChange={handlePriceRangeChange}
               className="input input-bordered"
               placeholder="Min"
             />
+            <br />
+            <label htmlFor="Max">Max : </label>
             <input
               type="number"
               name="maxPrice"
-              value={priceRange[1]}
-              onChange={handlePriceRangeChange}
               className="input input-bordered"
               placeholder="Max"
             />
-          </div>
+            <br />
+            <button
+            type="submit"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Filters
+          </button>
+          </form>
+
+          
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -220,8 +228,8 @@ const Home = () => {
         >
           <option value="5">5</option>
           <option value="10">10</option>
+          <option value="15">15</option>
           <option value="20">20</option>
-          <option value="50">50</option>
         </select>
       </div>
     </div>
