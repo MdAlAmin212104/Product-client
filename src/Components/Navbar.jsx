@@ -2,8 +2,10 @@ import { useState } from 'react';
 import logo from "../assets/logo.jpg";
 import Login from "../Page/Auth/Login";
 import Register from "../Page/Auth/Register";
+import useAuth from '../hook/useAuth';
 
 const Navbar = () => {
+    const { user, logout } = useAuth();
   const [modalType, setModalType] = useState('');
 
   const openModal = (type) => {
@@ -15,6 +17,7 @@ const Navbar = () => {
     setModalType('');
     document.getElementById("my_modal").close();
   };
+  console.log(user);
 
   return (
     <div className="navbar bg-base-100">
@@ -24,9 +27,14 @@ const Navbar = () => {
         </a>
       </div>
       <div className="navbar-end">
+        {user ? <button 
+            className='btn dark:text-white dark:bg-black'
+            onClick={logout}
+            >Logout</button> : 
         <a className="btn" onClick={() => openModal('login')}>
-          Login
-        </a>
+        Login
+      </a>
+      }
 
         {/* Combined modal for Login and Register */}
         <dialog id="my_modal" className="modal modal-bottom sm:modal-middle">
