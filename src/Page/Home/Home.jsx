@@ -1,32 +1,29 @@
 import { useEffect, useState } from "react";
+import useProduct from "../../hook/useProduct";
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
-
   const [currentPage, setCurrentPage] = useState(0);
   const [itemPerPage, setItemPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+  
+
   const [count, setCount] = useState(0);
-  const NumberOfPage = Math.ceil(count / itemPerPage);
-  const pages = [...Array(NumberOfPage).keys()];
+  const { products, error, } = useProduct(
+    currentPage,
+    itemPerPage,
+    search,
+  );
+
+
 
   useEffect(() => {
-    fetch(
-      `http://localhost:5000/products?page=${currentPage}&size=${itemPerPage}`
-    )
-      .then((res) => res.json())
-      .then((data) => setProducts(data));
-  }, [currentPage, itemPerPage]);
-
-  useEffect(() => {
-    fetch("http://localhost:5000/productsCount")
+    fetch(`${import.meta.env.VITE_URL}/productsCount`)
       .then((res) => res.json())
       .then((data) => setCount(data.count));
   }, []);
 
   const handleItemPerPage = (e) => {
-    const val = parseInt(e.target.value);
-    console.log(val);
-    setItemPerPage(val);
+    setItemPerPage(parseInt(e.target.value));
     setCurrentPage(0);
   };
 
@@ -35,57 +32,149 @@ const Home = () => {
       setCurrentPage(currentPage - 1);
     }
   };
+
   const handleNextPage = () => {
-    if (currentPage < pages.length - 1) {
+    if (currentPage < Math.ceil(count / itemPerPage) - 1) {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+  };
+
+  if (error) return <div>Error loading products</div>;
+
   return (
     <div>
+      <div className="flex justify-center">
+        <label className="input input-bordered flex items-center gap-2 md:w-2/3">
+          <input
+            type="text"
+            className="grow"
+            value={search}
+            onChange={handleSearchChange}
+            placeholder="Search products..."
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className="h-4 w-4 opacity-70"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </label>
+      </div>
+
       <h1 className="text-center dark:text-white my-4 font-bold text-4xl">
         Product List {products.length}
       </h1>
-      <div className="grid grid-cols-3 gap-6">
-        {products.length > 0 &&
-          products.map((product) => (
-            <div key={product._id} className="card bg-base-100 w-96 shadow-xl">
-              <figure className="h-[200px]">
-                <img src={product.productImage} alt="Shoes" />
-              </figure>
-              <div className="flex justify-between mt-4">
-                <h1 className="ml-2">Price {product.price}</h1>
-                <h4>{product.category}</h4>
+
+      <div className="flex gap-4">
+        {/* Brand Filter */}
+        <div className="md:w-[400px]">
+          <h1 className="text-3xl font-bold my-4">Brand</h1>
+          <div className="space-y-4">
+            {["XYZ Electronics", "ProTech", "SeriesWear", "SoundMaster", "TechWave"].map((brand) => (
+              <div key={brand} className="form-control">
+                <label className="flex cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                  />
+                  <span className="label-text ml-4 text-white">{brand}</span>
+                </label>
               </div>
-              <div className="card-body">
-                <div className="flex justify-between ">
-                  <h2 className="card-title">{product.productName}</h2>
-                  <h1>Rating : {product.ratings}</h1>
+            ))}
+          </div>
+
+          {/* Category Filter */}
+          <h1 className="text-3xl font-bold my-4">Category</h1>
+          <div className="space-y-4">
+            {["Electronics", "Computers", "Wearables", "Home Entertainment", "Accessories"].map((category) => (
+              <div key={category} className="form-control">
+                <label className="flex cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                  />
+                  <span className="label-text ml-4 text-white">{category}</span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          {/* Price Range Filter */}
+          <h1 className="text-3xl font-bold my-4">Price</h1>
+          <div className="flex justify-between">
+            <input
+              type="number"
+              name="minPrice"
+              className="input input-bordered"
+              placeholder="Min"
+            />
+            <input
+              type="number"
+              name="maxPrice"
+              className="input input-bordered"
+              placeholder="Max"
+            />
+          </div>
+        </div>
+
+        {/* Products Display */}
+        <div className="grid grid-cols-2 gap-4">
+          {products.length > 0 ? (
+            products.map((product) => (
+              <div key={product._id} className="card bg-base-100 shadow-xl">
+                <figure className="h-[200px]">
+                  <img src={product.productImage} alt={product.productName} />
+                </figure>
+                <div className="flex justify-between mt-4">
+                  <h1 className="ml-2">Price {product.price}</h1>
+                  <h4 className="mr-2">{product.category}</h4>
                 </div>
-                <p>{product.description}</p>
-                <h5 className="text-[12px]">
-                  Product Add Date : {product.productCreationDate}
-                </h5>
+                <div className="card-body">
+                  <div className="flex justify-between ">
+                    <h2 className="card-title">{product.productName}</h2>
+                    <h1>Rating: {product.ratings}</h1>
+                  </div>
+                  <p>{product.description}</p>
+                  <h5 className="text-[12px]">
+                    Product Add Date: {product.productCreationDate}
+                  </h5>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No products found.</p>
+          )}
+        </div>
       </div>
+
+      {/* Pagination */}
       <div className="pagination text-center mb-10 dark:text-black">
-        <p className="my-4 dark:text-white">Current click page {currentPage}</p>
+        <p className="my-4 dark:text-white">Current page {currentPage}</p>
         <button
           onClick={handlePrevPage}
           className="mr-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
         >
           Prev
         </button>
-        {pages.map((page) => (
+        {Array.from({ length: Math.ceil(count / itemPerPage) }, (_, page) => (
           <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
             className={`mr-2 px-4 py-2 rounded ${
               currentPage === page
                 ? "bg-orange-500 text-white dark:text-black"
                 : "bg-gray-200 hover:bg-gray-300 dark:text-black"
             }`}
-            onClick={() => setCurrentPage(page)}
-            key={page}
           >
             {page}
           </button>
