@@ -1,7 +1,22 @@
+import useAuth from "../../hook/useAuth";
 
 
 const Login = () => {
-  
+
+  const { userLogIn } = useAuth();
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const from = e.target;
+    const email = from.email.value;
+    const password = from.password.value;
+    //console.log(email, password);
+    userLogIn(email, password)
+      .then(res => {
+        console.log(res.user);
+      })
+      .catch (err => console.error(err));
+    from.reset();
+  }
 
   return (
     <div className="flex flex-col max-w-md p-6 rounded-md sm:p-10 dark:bg-gray-50 dark:text-gray-800">
@@ -12,7 +27,7 @@ const Login = () => {
         </p>
       </div>
 
-      <form className="space-y-12">
+      <form onSubmit={handleLogin} className="space-y-12">
         <div className="space-y-4">
           <div>
             <label htmlFor="email" className="block mb-2 text-sm">
@@ -44,7 +59,7 @@ const Login = () => {
         <div className="space-y-2">
           <div className="space-y-4">
             <button
-              type="button"
+              type="submit"
               className="w-full px-8 py-3 font-semibold rounded-md dark:bg-violet-600 dark:text-gray-50"
             >
               Sign in
